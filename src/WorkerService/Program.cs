@@ -1,21 +1,14 @@
-using FileSorterService.Services;
-using FileSorterService.Services.Abstract;
-using FileSorterService.Services.Concrete;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.Extensions.Logging.EventLog;
+using WorkerService;
 
 IHost host = Host.CreateDefaultBuilder(args)
-    .UseWindowsService(options =>
-    {
-        options.ServiceName = "Automatic File Sorting Service";
-    })
     .ConfigureServices(services =>
     {
         LoggerProviderOptions.RegisterProviderOptions<
             EventLogSettings, EventLogLoggerProvider>(services);
-        services.AddHostedService<WorkerService>();
-        services.AddSingleton<IFilterService, FilterService>();
-        services.AddSingleton<IFileSortingService, FileSortingService>();
+
+        services.AddHostedService<Worker>();
     })
     .ConfigureLogging((context, logging) =>
     {
@@ -25,12 +18,4 @@ IHost host = Host.CreateDefaultBuilder(args)
     })
     .Build();
 
-try
-{
-    await host.RunAsync();
-}
-catch
-{
-    //log
-    Environment.Exit(1);
-}
+await host.RunAsync();
